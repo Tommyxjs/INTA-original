@@ -1,0 +1,214 @@
+# TASK DESCRIPTION
+
+You are tasked with determining whether a given `{src_device}` CLI command (**TARGET_COMMAND**) matches a specified **COMMAND_TEMPLATE**, as described in the associated documentation/manual of `{src_device}`. Your evaluation must include the following aspects:
+
+1. **Structure Validation**: Does the `TARGET_COMMAND` follow the syntax and format of the `COMMAND_TEMPLATE` based on its defined structure and parameters?
+2. **Parameter Validation**: Does the `TARGET_COMMAND` correctly replace parameters (if any) in the `COMMAND_TEMPLATE`, adhering to the constraints and rules provided for those parameters in the documentation?
+3. **Semantic Alignment**: Does the `TARGET_COMMAND` align with the subtitle or functional purpose of the `COMMAND_TEMPLATE`?
+
+The "Command Format" section in the DOC specifies the fixed structure and placeholders for parameters of the `COMMAND_TEMPLATE`. Parameter details, including valid ranges and formats, are defined in the "Parameter Description" section.
+
+---
+
+## MATCHING RULES
+
+Use the provided `COMMAND_TEMPLATE` and its DOC, which specify the structure and allowed parameters for the command. Apply the following rules strictly to validate the match:
+
+### 1. Fixed Structure
+- The fixed keywords in the `COMMAND_TEMPLATE` (e.g., `router`, `bgp`, `no`, etc.) must match **exactly** and occur in the same sequence in the `TARGET_COMMAND`.
+
+### 2. Parameter Validation
+- Parameters are placeholders in the `COMMAND_TEMPLATE` that must be replaced with valid values in the `TARGET_COMMAND`.
+- For each parameter in the `COMMAND_TEMPLATE`, verify:
+  - The parameter value adheres to the rules provided in the "Parameter Description" section (e.g., valid range, format, or specific values).
+  - If the parameter supports specific formats (e.g., dotted decimal for `as-number`), confirm that the given value matches the specified format.
+
+### 3. Semantic Validation
+- Ensure the `TARGET_COMMAND` aligns with the functional purpose of the `COMMAND_TEMPLATE`. The subtitle, usage description, or functional notes from the manual are to be used for this check.
+- If the command violates semantic rules (e.g., attempting to use invalid functionality), it must be marked as **NOT a match**.
+
+---
+
+## Validation Order:
+   - First, verify the fixed keywords and structure.
+   - Then, validate all included parameters against the documented rules.
+   - Finally, confirm alignment with the intended functionality of the command.
+
+---
+
+## INPUT DESCRIPTION
+### COMMAND_TEMPLATE
+The command template to be matched against. It's also the title of the pages in the **Doc from Manual** below.
+
+### SUBTITLE
+The pre-selected subtitle of the command which also should be evaluated.
+
+### Doc from Manual:
+The reference from the manual that specifies the structure and allowed parameters. For example:
+
+**Includes**:
+- **Command Format**: Specifies the syntax and placeholder parameters.
+  - Example: `router bgp as-number`
+- **Parameter Description**: Provides details about the parameters, including:
+  - **Parameter Name** (e.g., `as-number`).
+  - **Value Constraints** (e.g., range `1-65535` or dotted decimal format like `1.65535`).
+- **Command Purpose**: Describes the function of the command, including its context and expected usage.
+
+### TARGET_COMMAND
+The actual command to be evaluated. 
+---
+
+## OUTPUT REQUIREMENTS
+
+Return ONLY a JSON object with the following fields:
+
+```json
+{
+  "Command": "<The provided TARGET_COMMAND>",
+  "Template": "<The provided COMMAND_TEMPLATE>",
+  "Match": "Yes | No",
+  "Confidence": "High | Medium | Low",
+  "Reasoning": "<Explain why the command matches or does not match, including structure validation, parameter adherence, and semantic alignment>"
+}
+```
+
+## EXAMPLES
+
+### Example 1: Match
+#### COMMAND_TEMPLATE
+```
+router bgp
+```
+
+#### SUBTITLE
+```
+BGP
+```
+
+#### Doc from Manual:
+```
+1.226 router bgp
+【命令功能】
+router bgp命令用来开启BGP协议，配置本自治系统号并进入BGP协议配置模式。
+no router bgp命令用来关闭BGP协议。
+default router bgp命令用来恢复缺省配置。
+缺省情况下，BGP协议处于关闭状态。
+【命令格式】
+router bgp as-number
+no router bgp as-number
+default router bgp as-number
+【参数说明】
+as-number：自治系统号。取值范围为1~65535。支持4字节AS号，即新的AS号取值范围为1~4294967295，用
+圆点模式表示为1~65535.65535。
+248
+命令参考 BGP
+【命令模式】
+全局配置模式
+【缺省级别】
+14
+【使用指导】
+配置本命令来启动BGP协议。
+RFC 4893定义了一个新的保留AS号23456，此AS号不能作为私有AS号使用。原有的私有AS号64512~65534仍
+然有效，65535保留做特殊用途。
+RFC 5398定义了两组新的保留AS号，它们是64496~64511和65536~65551。
+【配置举例】
+# 开启BGP协议，设置本地AS号为65000。
+Hostname> enable
+Hostname# configure terminal
+Hostname(config)# router bgp 65000
+【提示信息】
+无
+【常见错误】
+无
+【平台说明】
+无
+【相关命令】
+无
+```
+
+#### TARGET_COMMAND:
+```
+router bgp 65000
+```
+
+#### OUTPUT:
+```json
+{
+  "Command": "router bgp 65000",
+  "Template": "router bgp",
+  "Match": "Yes",
+  "Confidence": "High",
+  "Reasoning": "The command matches the fixed keywords and the parameter '65000' is a valid integer within the allowed range of 1-65535. The command aligns with the intended functionality of configuring BGP for the specified AS."
+}
+```
+
+---
+
+### Example 2: Not a Match
+#### COMMAND_TEMPLATE
+```
+router bgp
+```
+
+#### SUBTITLE
+```
+BGP
+```
+
+#### Doc from Manual:
+```
+1.226 router bgp
+【命令功能】
+router bgp命令用来开启BGP协议，配置本自治系统号并进入BGP协议配置模式。
+no router bgp命令用来关闭BGP协议。
+default router bgp命令用来恢复缺省配置。
+缺省情况下，BGP协议处于关闭状态。
+【命令格式】
+router bgp as-number
+no router bgp as-number
+default router bgp as-number
+【参数说明】
+as-number：自治系统号。取值范围为1~65535。支持4字节AS号，即新的AS号取值范围为1~4294967295，用
+圆点模式表示为1~65535.65535。
+248
+命令参考 BGP
+【命令模式】
+全局配置模式
+【缺省级别】
+14
+【使用指导】
+配置本命令来启动BGP协议。
+RFC 4893定义了一个新的保留AS号23456，此AS号不能作为私有AS号使用。原有的私有AS号64512~65534仍
+然有效，65535保留做特殊用途。
+RFC 5398定义了两组新的保留AS号，它们是64496~64511和65536~65551。
+【配置举例】
+# 开启BGP协议，设置本地AS号为65000。
+Hostname> enable
+Hostname# configure terminal
+Hostname(config)# router bgp 65000
+【提示信息】
+无
+【常见错误】
+无
+【平台说明】
+无
+【相关命令】
+无
+```
+
+#### TARGET_COMMAND:
+```
+router bgp abc
+```
+
+
+#### OUTPUT:
+```json
+{
+  "Command": "router bgp abc",
+  "Template": "router bgp",
+  "Match": "No",
+  "Confidence": "High",
+  "Reasoning": "The parameter 'abc' is not valid for 'as-number'. The parameter should be integer in the allowed range of 1-65535, as described in the manual."
+}
+```

@@ -1,0 +1,121 @@
+## TASK DESCRIPTION
+
+Your task is to select the most semantically relevant **subtitle** for a given CLI command,
+based on a list of candidate command-document pairs.
+
+Each candidate consists of:
+
+* a command
+* its corresponding subtitle (Secondary section)
+* its documentation text
+
+You must determine which candidate best matches the TARGET_COMMAND in terms of:
+
+* command intent
+* command structure
+* functional behavior implied by the documentation
+
+You are performing **semantic matching against real command documentation**.
+
+---
+
+## INPUT DESCRIPTION
+
+### CONFIGURATION
+
+A snippet of {src_device} configuration text.
+This is provided as context.
+
+### TARGET_COMMAND
+
+The specific command that needs to be matched.
+
+### CANDIDATE_COMMANDS
+
+A list of candidate entries. Each entry contains:
+
+* "command": the manual command
+* "subtitle": the section it belongs to
+* "doc": the extracted documentation text
+
+---
+
+## YOUR TASK
+
+From the provided CANDIDATE_COMMANDS,
+select the ONE candidate that best matches the TARGET_COMMAND.
+
+Matching should consider:
+
+* similarity in command structure
+* similarity in keywords
+* similarity in behavior described in doc
+* overall semantic intent
+
+---
+
+## OUTPUT REQUIREMENTS
+
+Return ONLY a JSON object:
+
+```json
+{
+  "Command": "...",
+  "Best_Subtitle": "...",
+  "Matched_Command_Template": "...",
+  "Confidence": "High | Medium | Low | None",
+  "Reasoning": "..."
+}
+```
+
+### Field description:
+
+* **Command**
+  The original TARGET_COMMAND
+
+* **Best_Subtitle**
+  The subtitle of the best-matching candidate
+  (If no suitable match, return null)
+
+* **Matched_Command_Template**
+  The best-matching command template of the original TARGET_COMMAND
+  (If no suitable match, return null)
+
+* **Confidence**
+
+  * High → nearly identical or clearly same function
+  * Medium → similar function but slightly different form
+  * Low → weak similarity
+  * None → no match
+
+* **Reasoning**
+  Explain briefly based on:
+
+  * command similarity
+  * or documentation meaning
+
+---
+
+## IMPORTANT RULES
+
+* You MUST choose from the provided candidates only
+* Do NOT invent new subtitles
+* Prefer semantic meaning over keyword overlap
+* If multiple candidates are similar, choose the closest one
+* If nothing matches, return null with Confidence = "None"
+
+---
+
+## FAILURE CASE
+
+If no candidate matches:
+
+```json
+{
+  "Command": "...",
+  "Best_Subtitle": null,
+  "Matched_Command_Template": null,
+  "Confidence": "None",
+  "Reasoning": "No candidate command matches the target command."
+}
+```

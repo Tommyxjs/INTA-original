@@ -1,0 +1,40 @@
+## TASK DESCRIPTION
+You are analyzing a configuration manual for device {DEVICE_NAME}.
+You are given:
+1) `CONFIG_TOC_TEXT`: the table of contents of the configuration manual, organized by subtitles and section numbers.
+2) `TARGET_CONFIG`: a configuration snippet, where each line of configuration is annotated with a command-manual subtitle label (`<subtitle_label>::<command>`). These labels help indicate the command context but may not directly match the configuration manual’s structure.
+
+Your goal is to identify which sections (subtitle + numbered entry) from the configuration manual most likely describe the functionality used by the entire configuration snippet. The focus is on functional grouping as per the configuration manual.
+
+## INPUT
+### CONFIG_TOC_TEXT
+{CONFIG_TOC_TEXT}
+
+### TARGET_CONFIG
+{TARGET_CONFIG}
+
+## YOUR TASK
+- Determine the top sections in `CONFIG_TOC_TEXT` that explain the functionality implemented by the entire `TARGET_CONFIG` snippet.
+- Each section should be represented by the subtitle, section number (e.g. "2.3.1"), and section title. 
+- The section number should be as detailed as possible(e.g. "2.3.1" instead of "2.3").
+- Use all commands in the snippet collectively to infer the applicable configuration feature.
+- The per-command subtitle labels (`<subtitle_label>`) are hints about command context but do not directly map to config manual sections; apply judgment to find functional sections.
+- Always choose the most specific section that directly explains the configuration feature.
+- Do not return parent sections if a more specific subsection exists.
+
+## OUTPUT FORMAT
+Return a JSON array, each entry representing one relevant config manual section:
+
+[
+  {
+    "subtitle": "...",
+    "number": "...",
+    "title": "...",
+    "confidence": "High | Medium | Low",
+    "reasoning": "Explain briefly how this section matches the overall configuration snippet."
+  },
+  ...
+]
+
+- The "confidence" value reflects how strongly this section likely covers the snippet’s functionality.
+- If no sections are clearly relevant, return an empty list.

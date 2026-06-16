@@ -1,0 +1,77 @@
+## TASK DESCRIPTION
+Your task is to analyze the following {src_device} configuration, divide it into fragments based on intents and behaviors. Then give a general description of each fragment, together with a detailed description of each sub module in the fragment. If the source configuration can not be divided, treat it as a single fragment.
+
+To assist you, corresponding {src_device} manuals are provided in the ## MANUALS section.
+
+We also provide you with an example.
+
+## OUTPUT REQUIREMENTS
+1. Divide the configuration into fragments . Each fragment should represent a distinct function or behavior.
+2. Store the fragments in a SINGLE list of JSON structure where each object contains:
+   - **"Fragment"**: The original {src_device} configuration segment, preserved with its formatting (including '\n' and indents).
+   - **"Function"**: A general description of the fragment's primary function.
+   - **"Details"**: A detailed description of each sub-module in the fragment. Each sub-module must have "Function" and "Parameter". Each sub-module must be described as a flat dictionary in "Details" field, with no nested dictionaries. As shown in the example below.
+
+## GUIDELINES
+- Provide only the most direct functional description for each fragment.
+- Avoid specific details such as field names or parameter values in the "Function" field.
+- Do not speculate about the broader purpose or behavior of any single fragment.
+
+# EXAMPLE
+## MANUALS
+...
+
+## CONFIGURATION
+router bgp 6
+ bgp bestpath as-path multipath-relax
+ bgp log-neighbor-changes
+ bgp graceful-restart restart-time 120
+ bgp graceful-restart stalepath-time 360
+ bgp graceful-restart
+ neighbor 192.168.2.65 remote-as 2000
+ address-family ipv4
+  maximum-paths ebgp 64
+  network 10.51.6.0 mask 255.255.255.0
+  neighbor 192.168.2.65 activate
+  exit-address-family
+
+## RESULT
+```json
+[
+  {
+    ...
+  },
+  {
+    "Fragment": " address-family ipv4\n  maximum-paths ebgp 64\n  network 10.51.6.0 mask 255.255.255.0\n  neighbor 192.168.2.65 activate\n  exit-address-family",
+    "Function": "Configure IPv4 address family settings including multipath capability, route advertisement, and neighbor activation",
+    "Details": {
+      "address-family ipv4": {
+        "Function": "Enter the IPv4 unicast address family configuration mode",
+        "Parameter": {
+          "Address_Family": "IPv4"
+        }
+      },
+      "maximum-paths ebgp": {
+        "Function": "...",
+        "Parameter": {
+          ...
+        }
+      },
+    }
+  },
+  ...
+]
+```
+
+# YOUR TASK
+## MANUALS
+{manuals}
+
+## CONFIGURATION
+{configuration}
+
+## RESULT
+```json
+Your answer here (a single list of all Fragments)
+```
+{suffix}

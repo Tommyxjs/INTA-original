@@ -1,0 +1,267 @@
+## TASK DESCRIPTION
+Your task is to analyze a specific CLI command appearing in a {src_device} configuration
+and determine **which secondary-level manual section** is most relevant to this command.
+
+You must decide the best-matching econdary-level manual section based on:
+- Command semantics and intent
+- Command keywords and structure
+- The functional scope implied by the manual directory hierarchy
+
+You are NOT required to extract detailed explanations or parameters.
+Your goal is classification, not documentation generation.
+
+---
+
+## INPUT DESCRIPTION
+
+### CONFIGURATION
+A snippet of {src_device} configuration text.
+The configuration is provided for context only.
+
+### TARGET_COMMAND
+A single CLI command extracted from the configuration.
+This is the command that must be classified.
+
+### MANUAL_STRUCTURE
+The structured directory hierarchy of the {src_device} manual, including:
+### Primary sections (一级目录)
+- Secondary sections (二级目录)
+
+### 基础配置
+- 命令行界面
+- 零配置自动部署
+- 基础管理
+- RBAC
+- Line
+- 文件系统管理
+- USB
+- 系统日志
+- 软件升级
+- Time Range
+- 转发表模式管理
+- 管理板冗余
+- 模块热插拔
+- 重启进程
+- Python
+- 软件授权管理
+- Hungtask 命令
+- TCAM 模式管理命令
+- ECC 修复命令
+
+### 设备管理
+- 告警管理
+
+### 虚拟化
+- VSU
+
+### 接口
+- 以太网接口
+- 链路聚合口
+
+### 以太网交换
+- MAC 地址
+- 端口回环
+- VLAN
+- MAC VLAN
+- Protocol VLAN
+- Private VLAN
+- Super VLAN
+- GVRP
+- QinQ
+- MSTP
+- ERPS
+- LLDP
+
+### IP业务
+- ARP
+- IPv4 基础
+- DHCP
+- DHCP 客户端
+- DHCP Snooping
+- DNS
+- IPv6 基础
+- DHCPv6
+- DHCPv6 客户端
+- 隧道
+- TCP
+- IP 快转
+
+### IP路由
+- IP 路由基础
+- 静态路由
+- RIP
+- RIPng
+- OSPFv2
+- OSPFv3
+- IS-IS
+- BGP
+- VRF
+- 路由策略
+- 策略路由
+- 密钥
+
+### 组播
+- IPv4 组播路由管理
+- IGMP
+- PIM-SM
+- PIM-DM
+- IGMP Snooping
+- MSDP
+- IPv6 组播路由管理
+- MLD
+- PIM-SMv6
+- MLD Snooping
+
+### MPLS
+- MPLS 基础
+- MPLS L3VPN
+- MPLS RAS(可靠性)
+- Segment Routing
+
+### ACL和QoS
+- ACL
+- QoS
+- 队列缓存管理
+
+### 安全
+- AAA
+- RADIUS
+- TACACS
+- SCC(安全控制中心)
+- Password Policy
+- SSH
+- CPP(CPU 保护策略)
+- NFPP(网络基础保护策略)
+- 风暴控制
+- uRPF(单播反向路径转发)
+- DoS 保护
+- 安全日志审计
+
+### 可靠性
+- REUP
+- RLDP
+- DLDP
+- M-LAG
+- VRRP
+- VRRP Plus
+- BFD
+- Track
+- 路由接口震荡抑制
+- 背板口监控
+- HAM
+- DAG
+
+### 网管与监控
+- 网络连通性检测
+- 一键收集
+- 镜像
+- 报文捕获
+- sFlow
+- IPFIX
+- 查看设备重启原因
+- NTP
+- SNTP
+- FTP 服务器
+- FTP 客户端
+- TFTP 服务器
+- TFTP 客户端
+- SNMP
+- RMON
+- NETCONF
+- gRPC
+- OpenFlow
+- 智能嵌入式管理器
+- IFA
+- IDS
+- 智能监控
+- 智能硬件诊断
+- HOTKEY
+
+### 数据中心
+- VXLAN
+- PFC
+- RDMA
+
+Each secondary section belongs to exactly one primary section.
+
+---
+
+## OUTPUT REQUIREMENTS
+Return a SINGLE JSON object with the following fields:
+
+- **"Command"**  
+  The original TARGET_COMMAND string.
+
+- **"Matched"**  
+  Boolean value:
+  - true if a relevant secondary section can be confidently identified
+  - false otherwise
+
+- **"Primary_Section"**  
+  The name of the matched primary-level manual section (一级目录).  
+  If not matched, set to null.
+
+- **"Secondary_Section"**  
+  The name of the matched secondary-level manual section (二级目录).  
+  If not matched, set to null.
+
+- **"Reasoning"**  
+  A concise explanation describing **why** this command belongs to the selected secondary section.  
+  The reasoning must be based only on:
+  - Command semantics
+  - Manual directory titles  
+  Do NOT reference any undocumented behavior.
+
+- **"Confidence"**  
+  One of:
+  - "High"   (clear semantic match to section title)
+  - "Medium" (reasonable but indirect association)
+  - "Low"    (weak match, possible ambiguity)
+  - "None"   (no suitable section found)
+
+---
+
+## CLASSIFICATION GUIDELINES
+- Prefer the most specific secondary section over generic ones.
+- Use section titles as semantic signals, not keyword coincidence alone.
+- Do NOT invent new sections or modify section names.
+- Do NOT assume undocumented command behavior.
+- If multiple sections seem applicable, choose the best one and lower the confidence level.
+
+---
+
+## FAILURE HANDLING
+If no suitable secondary section can be identified:
+- Set "Matched" to false
+- Set "Primary_Section" and "Secondary_Section" to null
+- Set "Confidence" to "None"
+
+---
+
+# EXAMPLE
+
+## CONFIGURATION
+interface GigabitEthernet 1/0/1
+ port link-type access
+
+## TARGET_COMMAND
+port link-type access
+
+## MANUAL_STRUCTURE
+- 接口
+  - 以太网接口
+  - 链路聚合口
+- 以太网交换
+  - VLAN
+  - MAC 地址
+
+## RESULT
+```json
+{
+  "Command": "port link-type access",
+  "Matched": true,
+  "Primary_Section": "接口",
+  "Secondary_Section": "以太网接口",
+  "Reasoning": "The command configures the link type of a physical Ethernet interface, which aligns directly with the Ethernet interface management section.",
+  "Confidence": "High"
+}

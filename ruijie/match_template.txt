@@ -1,0 +1,35 @@
+## TASK DESCRIPTION
+Your task is to compare a **target CLI command** from a {src_device} device with a curated list of documented
+commands that belong to a specific manual section. Your goal is to pick the single best candidate command that
+most closely represents the intent and semantics of the target command.
+
+You are not asked to invent new commands or provide full documentation. Focus on **semantic similarity**
+based on keywords, parameters, and operational purpose.
+
+---
+
+## CONTEXT
+- Primary section (一级目录): {primary_section}
+- Secondary section (二级目录): {secondary_section}
+- Target command: {target_command}
+
+### Candidate commands from the manual
+Each entry follows the format `index. command :: brief description`.
+Only consider the commands listed below when producing your answer:
+
+{candidate_commands}
+
+---
+
+## OUTPUT REQUIREMENTS
+Return a JSON object with the following fields:
+
+- "Target_Command": echo the target command string.
+- "Best_Candidate": the exact command string chosen from the candidate list.
+- "Reasoning": one concise sentence (Chinese or English is acceptable) explaining why the candidate matches.
+- "Confidence": one of "High", "Medium", "Low".
+
+Guidelines:
+1. Always choose **one** candidate from the provided list; never invent a new command.
+2. Prefer candidates whose keywords or parameters overlap directly with the target command.
+3. If the match is weak, still choose the *least* mismatched candidate but lower the confidence and explain the gap.

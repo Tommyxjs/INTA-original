@@ -1,0 +1,275 @@
+# TASK DESCRIPTION
+
+You are tasked with determining whether a given `{src_device}` configuration fragment (**TARGET_FRAGMENT**) is genuinely relevant to a specified candidate documentation/manual section (**CANDIDATE_SECTION**).
+
+The candidate section has already been pre-selected from the configuration manual of `{src_device}`, and your job is to perform a second-stage filtering step to decide whether this section should be retained as relevant to the configuration fragment.
+
+Your evaluation must include the following aspects:
+
+1. **Command-Level Relevance**: Does the candidate section explicitly document one or more commands, syntax patterns, or configuration elements that appear in the `TARGET_FRAGMENT`?
+2. **Parameter / Syntax Relevance**: If the section contains command formats, parameters, or syntax rules, do they correspond to commands or parameter usages present in the `TARGET_FRAGMENT`?
+3. **Functional / Semantic Relevance**: Does the candidate section describe the function, feature behavior, or configuration purpose reflected in the `TARGET_FRAGMENT`?
+4. **Filtering Decision**: Based on the above, should this candidate section be retained as relevant to the `TARGET_FRAGMENT`, or filtered out?
+
+The goal is not merely to detect loose topical similarity, but to determine whether the section is truly useful for understanding, validating, or documenting the configuration fragment.
+
+---
+
+## RELEVANCE RULES
+
+Use the provided `TARGET_FRAGMENT`, section title/subtitle, and the full text of the candidate manual section. Apply the following rules strictly:
+
+### 1. Direct Relevance to Commands in the Fragment
+- If the candidate section explicitly documents one or more commands appearing in the `TARGET_FRAGMENT`, it should generally be considered relevant.
+- If the section documents a command template or command variant that clearly matches syntax used in the `TARGET_FRAGMENT`, it should be considered relevant.
+- If the section only discusses a loosely related feature, protocol, or general topic, but does not actually document commands or configuration behavior reflected in the `TARGET_FRAGMENT`, it should be considered **not relevant**.
+
+### 2. Syntax and Parameter Relevance
+- Compare the fixed keywords, command structures, and parameter patterns in the `TARGET_FRAGMENT` with any command formats, syntax definitions, or examples in the candidate section.
+- If the section’s documented syntax aligns with one or more commands in the `TARGET_FRAGMENT`, this is strong evidence of relevance.
+- If the section’s parameters, placeholders, or command forms are inconsistent with the actual fragment content, this is evidence against relevance.
+
+### 3. Functional Relevance
+- Check whether the described purpose, effect, configuration task, or operational context of the candidate section matches what the `TARGET_FRAGMENT` is configuring.
+- A section may still be relevant even if it does not reproduce the exact full command line from the fragment, as long as it clearly documents the same command family, feature behavior, or configuration intent reflected in the fragment.
+- However, high-level background text, unrelated feature overviews, or adjacent commands should not be treated as relevant unless they directly help explain the configuration fragment.
+- If the candidate section documents commands that appear similar to those in the `TARGET_FRAGMENT` but actually serve a different function or configuration purpose, it should be considered **not relevant** and filtered out.
+
+### 4. Partial Relevance Handling
+- If the candidate section is directly relevant to an important command or configuration element within the `TARGET_FRAGMENT`, it can still be marked as relevant even if it does not cover the entire fragment.
+- Relevance should be judged based on whether the section provides useful documentation for a meaningful part of the fragment, not necessarily the whole fragment.
+- However, if the overlap is trivial, incidental, or only based on generic feature similarity, it should be marked as **not relevant**.
+
+### 5. Exclusion Criteria
+Mark the candidate section as **not relevant** if any of the following is true:
+- The section is about a different command, even if in the same protocol or feature area.
+- The section only shares a few keywords with the `TARGET_FRAGMENT` but describes different syntax or functionality.
+- The section is too general and does not provide command-specific, syntax-specific, or behavior-specific documentation for the fragment.
+- The section documents a sibling, parent, child, or neighboring command, but not commands or behaviors actually reflected in the `TARGET_FRAGMENT`.
+
+---
+
+## Validation Order
+- First, identify the key commands, keywords, and configuration intent in the `TARGET_FRAGMENT`.
+- Then, check whether the candidate section explicitly documents any of those commands or directly matching command forms.
+- Next, verify whether the syntax, parameters, and examples in the section align with the fragment.
+Finally, judge whether the section is truly useful and relevant for explaining this configuration fragment semantically, rather than merely being topically adjacent or textually similar.
+---
+
+## INPUT DESCRIPTION
+
+### TARGET_FRAGMENT
+The configuration fragment to be checked.  
+It may contain one or more CLI commands.
+
+### CANDIDATE_SECTION_SUBTITLE
+The subtitle of the candidate section.
+
+#### CANDIDATE_SECTION_NAME
+The name of the candidate section.
+
+### CANDIDATE_SECTION_DOC
+The full text or extracted content of the candidate section from the configuration manual.
+
+This content may include:
+- Command function / purpose
+- Command format
+- Parameter description
+- Usage guidelines
+- Examples
+- Notes / caveats
+- Related commands
+
+---
+
+## OUTPUT REQUIREMENTS
+
+Return ONLY a JSON object with the following fields:
+
+```json
+{
+  "Fragment": "<The provided TARGET_FRAGMENT>",
+  "SectionTitle": "<The provided CANDIDATE_SECTION_TITLE>",
+  "Relevant": "Yes | No",
+  "Confidence": "High | Medium | Low",
+  "Reasoning": "<Explain whether the section is directly relevant to the configuration fragment, covering command-level overlap, syntax/parameter alignment, and functional relevance>"
+}
+```
+
+---
+
+## EXAMPLES
+
+### Example 1: Relevant
+#### TARGET_FRAGMENT
+```text
+router bgp 65000
+ neighbor 192.168.1.1 remote-as 65100
+```
+
+#### CANDIDATE_SECTION_SUBTITLE
+```text
+BGP
+```
+
+#### CANDIDATE_SECTION_NAME
+```text
+配置BGP邻居
+```
+
+#### CANDIDATE_SECTION_DOC
+```text
+1.3.4 配置BGP邻居
+1. 功能介绍
+配置BGP Speaker成为邻居。
+2. 配置限制与指导
+ IBGP邻居如果非直连，需要配置IGP或静态路由协议实现邻居之间路由可达。
+ EBGP邻居如果非直连，需要配置邻居ebgp-multihop参数。
+ 指定建立邻居的源接口必须是本地有效的接口或IP地址。
+ 使用命令exit-address-family退出BGP的地址族配置模式。
+15
+配置指南 BGP
+3. 配置步骤
+(1) 进入特权模式。
+enable
+(2) 进入全局配置模式。
+configure terminal
+(3) 启动BGP协议，进入BGP配置模式。
+router bgp as-number
+(4) （可选）用来配置BGP邻居超限告警。
+bgp maximum-neighbor maximum-neighbor-numbers warning-only
+缺省情况下，未配置邻居超限告警。
+(5) （可选）开启邻居地址族能力检测功能。
+bgp notify unsupport-capability
+缺省情况下，邻居地址族能力检测功能处于关闭状态。
+(6) （可选）进入到相应的地址族配置模式，如有需要针对某一类地址族进行配置，请选择其中一项进行配置。
+○ 进入IPv4 Unicast配置模式。
+address-family ipv4 [ unicast ]
+○ 进入IPv4 VRF配置模式。
+address-family ipv4 vrf vrf-name
+○ 进入IPv6 Unicast配置模式。
+address-family ipv6 [ unicast ]
+○ 进入IPv6 VRF配置模式。
+address-family ipv6 vrf vrf-name
+○ 进入VPNv4配置模式。
+address-family vpnv4 [ unicast ]
+○ 进入VPNv6配置模式。
+address-family vpnv6 [ unicast ]
+○ 进入L2VPN配置模式。
+address-family l2vpn evpn
+缺省情况下，未配置允许BGP邻居之间进行L2VPN信息交互。
+○ 进入link-state配置模式。
+address-family link-state [ link-state ]
+(7) 创建BGP邻居。当配置的AS号与本地AS号相同，则建立IBGP邻居；当配置的AS号与本地AS号不同，则建
+立EBGP邻居。
+neighbor { neighbor-ipv4-address | neighbor-ipv6-address | peer-group-name } remote-as as-number
+缺省情况下，BGP Speaker未指定任何邻居。
+(8) （可选）配置指定对等体（组）的描述性语句。
+neighbor { neighbor-ipv4-address | neighbor-ipv6-address | peer-group-name } description text
+缺省情况下，未配置指定对等体（组）的描述性语句。
+(9) （可选）创建与邻居进行TCP连接的源接口或IP地址。IBGP邻居间推荐使用环回接口，EBGP邻居间推荐使
+用直连接口。
+16
+配置指南 BGP
+neighbor { neighbor-ipv4-address | neighbor-ipv6-address | peer-group-name } update-source { interface-
+type interface-number | address }
+缺省情况下，BGP将根据邻居的IP地址自动选择TCP连接的源IP，一般采用本地报文出接口的IP地址。
+(10) （可选）设置邻居TCP报文TTL（Time To Live，生存时间）。TTL值越大，则支持到邻居的间隔跳数越大。
+当TTL为1时，要求BGP邻居设备必须直接相连。
+neighbor { neighbor-ipv4-address | neighbor-ipv6-address | peer-group-name } ebgp-multihop [ ttl ]
+缺省情况下，IBGP邻居的TCP报文TTL为255，EBGP邻居为1。
+(11) （可选）配置BGP发起邻居建立TCP连接的模式。
+neighbor { neighbor-ipv4-address | neighbor-ipv6-address | peer-group-name } transport connection-
+mode { active-only | both | passive-only }
+缺省情况下，BGP邻居同时支持主动及被动方式
+```
+
+#### OUTPUT
+```json
+{
+  "Fragment": "router bgp 65000\n neighbor 192.168.1.1 remote-as 65100",
+  "subtitle": "BGP",
+  "section_name": "配置BGP邻居",
+  "Relevant": "Yes",
+  "Confidence": "High",
+  "Reasoning": "The section directly documents the command 'router bgp', which appears in the configuration fragment and defines the BGP process for AS 65000. Although it does not cover the entire fragment, it clearly documents a key command in the fragment and is therefore relevant."
+}
+```
+
+---
+
+### Example 2: Weakly Related but Should Be Filtered Out
+#### TARGET_FRAGMENT
+```text
+router bgp 65000
+ neighbor 192.168.1.1 remote-as 65100
+```
+
+#### CANDIDATE_SECTION_SUBTITLE
+```text
+BGP
+```
+
+#### CANDIDATE_SECTION_NAME
+```text
+配置BGP IPv6地址族
+```
+
+#### CANDIDATE_SECTION_DOC
+```text
+1.3.5 配置BGP IPv6地址族
+1. 功能简介
+配置BGP协议交互IPv6路由，实现跨AS域的IPv6网络互访。
+2. 配置限制与指导
+ 一般情况，BGP需要采用IPv6地址建立邻居，来实现IPv6路由交互。
+ 使用IPv6链路本地地址与邻居建立对等体连接时，地址的表述形式为Linklocal地址%接口名，例如
+FE80::1%GigabitEthernet0/1。
+ 特殊场景下，例如6PE（IPv6 Provider Edge Router，IPv6供应商边缘路由器）功能，BGP同样支持在IPv4
+地址的邻居上交互IPv6路由。
+ 基于BGP IPv6业务相关的配置，都需要在BGP IPv6地址族模式下配置。
+ IPv6地址的邻居用来交互IPv6路由，但在BGP模式下配置邻居时，会自动激活邻居IPv4 Unicast地址族能
+力，因此建议用户手动关闭IPv4 Unicast地址族能力。
+ 使用命令exit-address-family退出BGP的地址族配置模式。
+3. 配置步骤
+(1) 进入特权模式。
+enable
+(2) 进入全局配置模式。
+configure terminal
+(3) 启动BGP协议，进入BGP配置模式。
+router bgp as-number
+(4) 创建BGP邻居。
+neighbor { neighbor-ipv4-address | neighbor-ipv6-address | peer-group-name } remote-as as-number
+(5) 配置BGP IPv4地址族模式。
+address-family ipv4 unicast
+(6) 创建关闭BGP邻居IPv4地址族能力。
+no neighbor { neighbor-ipv4-address | peer-group-name } activate
+17
+配置指南 BGP
+缺省情况下，IPv4地址族能力处于开启状态。
+(7) 配置BGP IPv6地址族模式。
+address-family ipv6 unicast
+(8) 创建BGP邻居IPv6地址族能力。
+neighbor { neighbor-ipv6-address | peer-group-name } activate
+缺省情况下，IPv6地址族能力处于关闭状态。
+(9) （可选）配置BGP通告IPv6路由。
+network network-ipv6-address/prefix-length [ route-map route-map-name ] [ backdoor ]
+缺省情况下，BGP协议未配置网段路由信息。
+(10) （可选）配置在向BGP IPv6链路本地对等体（组）发送IPv6路由信息时使用链路本地地址填充全局地址下一
+跳。
+neighbor { neighbor-ipv4-address | neighbor-ipv6-address | peer-group-name } global-nexthop-replace-
+local
+缺省情况下，向BGP IPv6链路本地地址对等体（组）发送IPv6路由信息时不使用链路本地地址填充全局地址
+下一跳。
+```
+
+#### OUTPUT
+```json
+{
+  "Fragment": "router bgp 65000\n neighbor 192.168.1.1 remote-as 65100",
+  "subtitle": "BGP",
+  "section_name": "配置BGP IPv6地址族",
+  "Relevant": "No",
+  "Confidence": "High",
+  "Reasoning": "Although the section directly documents the command 'router bgp as-number' and 'neighbor ... remote-as ...', which appears in the fragment. Its parameters, and function which require IPv6 does not align with the commands shown in the fragment which is about IPv4, so it is irrelevant."
+}
+```

@@ -1,0 +1,70 @@
+## TASK
+Your task is to translate the following configuration from {src_device} to {tgt_device}.
+
+## OBJECTIVE
+Produce a {tgt_device} configuration that is as functionally equivalent as possible to the original {src_device} configuration.
+
+## REQUIREMENTS
+1. Follow Manuals
+   - Use the provided manual sections to map {src_device} commands to {tgt_device} commands.
+   - Follow {tgt_device} syntax, hierarchy, and command conventions strictly.
+   - Prefer manual-supported translations over inferred translations whenever possible.
+
+2. Functional Equivalence
+   - Preserve the original configuration intent and behavior as much as possible.
+   - DO NOT fabricate missing parameters, views, interface context, routing context, policy definitions, or any other information not present in the source.
+   - If the source configuration is incomplete, translate only the available parts without speculation.
+
+3. Syntax and Vendor Conventions
+   - Follow {tgt_device} syntax, views, command hierarchy, and vendor conventions.
+   - If multiple target commands could correspond to a source command, choose the most standard and commonly used equivalent.
+   - Make sure the translated configuration is syntactically correct accroding to the target vendor's configuration manual and command manual.
+
+
+4. No Unnecessary Additions
+   - Do NOT add comments, explanations, default commands, or optimization commands unless explicitly required.
+   - Do NOT add commands that change device behavior beyond the source configuration intent.
+
+5. Interface Handling
+   - If a translated target interface requires explicit activation, add the equivalent of `undo shutdown` / `no shutdown` only when it is necessary and consistent with {tgt_device} conventions.
+   - If the translated command enters an interface context on {tgt_device} and the interface must be explicitly enabled to match source behavior, add the equivalent activation command only when justified by the source intent and target conventions.
+
+6. Output Formatting
+   - Output the final translated configuration in clean plaintext.
+   - Omit prompt strings, device names, and view markers unless they are part of the actual configuration syntax.
+   - Preserve hierarchical structure using indentation when appropriate.
+
+
+
+## {src_device} CONFIGURATION
+{src_config}
+
+## {src_device} CONFIGURATION MANUALS
+{src_config_manuals}
+
+## {src_device} COMMAND MANUALS
+{src_cmd_manuals}
+
+## {tgt_device} CONFIGURATION MANUALS
+{tgt_config_manuals}
+
+## {tgt_device} COMMAND MANUALS
+{tgt_cmd_manuals}
+
+## OUTPUT INSTRUCTIONS
+- You may reason internally, but do not expose unnecessary internal analysis.
+- Return the COMPLETE translated configuration at the end of your answer.
+- Final output format:
+
+```plaintext
+{tgt_config_here}
+```
+## GUIDELINES
+1. Manual notation conventions:
+   - [ ] means optional items.
+   - {{ x | y | ... }} means choose one item from a required grouped set.
+   - [ x | y | ... ] means choose one item from an optional grouped set, or choose none.
+2. If no exact equivalent exists:
+   - Prefer the closest functionally equivalent command sequence supported by the manuals.
+   - Do not fabricate unsupported syntax.
+3. Keep the translation concise and configuration-only.
